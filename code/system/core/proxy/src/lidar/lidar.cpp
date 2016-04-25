@@ -62,6 +62,8 @@ Lidar::~Lidar()
 // This method will do the main data processing job.
 odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode Lidar::body()
 {
+  std::cout << "In body";
+
   if(m_startConfirmed) {
     SendData();
   }
@@ -118,11 +120,17 @@ void Lidar::setUp()
   m_measurementHeader[4] = 0xB0;
   m_measurementHeader[5] = 0x69;
   m_measurementHeader[6] = 0x41;
+
+  std::cout << "Setup done" << std::endl;
 }
 
 void Lidar::nextString(const std::string &s) 
 {
   unsigned char byte = (unsigned char)s[0]; //Storing byte as unsigned char
+
+  if(counter == 0) {
+    std::cout << "New reading ";
+  }
 
   //Updating buffer
   for(uint32_t i = 0; i < 9; i++) { 
