@@ -80,14 +80,14 @@ void Lidar::setUp()
   m_position[1] = kv.getValue<float>("proxy-lidar.mount.y");
   m_position[2] = kv.getValue<float>("proxy-lidar.mount.z");
 
-  if (type.compare("sick") == 0) {
+  //if (type.compare("sick") == 0) {
     //      m_device = std::unique_ptr<Device>(new SickDevice());
-  }
+  //}
 
-  if (m_device.get() == nullptr) {
-    std::cerr << "[proxy-lidar] No valid device driver defined."
-              << std::endl;
-  }
+  //if (m_device.get() == nullptr) {
+   // std::cerr << "[proxy-lidar] No valid device driver defined."
+   //           << std::endl;
+  //}
 
   string SERIAL_PORT = kv.getValue<std::string>("proxy-lidar.port");
   uint32_t BAUD_RATE = 9600; //TODO: Put in configuration file
