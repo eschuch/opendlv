@@ -24,23 +24,27 @@ message opendlv.Constants [id = 150] {
   const double RAD2DEG = 57.295779513082325; // 1.0 / DEG2RAD;
 }
 
-/*
-message opendlv.coordinate.Cartesian3 [id = 151] {
-  float p[3] [id = 1]; // x, y, z
-}
+
+//message opendlv.coordinate.Cartesian3 [id = 151] {
+//  float p[3] [id = 1]; // x, y, z
+//}
+
 
 message opendlv.coordinate.Spherical3 [id = 152] {
   float p[3] [id = 1]; // radius, zenith, azimuth
 }
 
-message opendlv.coordinate.Quaternion3 [id = 153] {
-  float o[4] [id = 1]; // x, y, z, w
-}
 
-message opendlv.coordinate.Pose [id = 154] {
-  opendlv.coordinate.Cartesian3 position [id = 1];
-  opendlv.coordinate.Quaternion3 orientation [id = 2];
-}
+//message opendlv.coordinate.Quaternion3 [id = 153] {
+//  float o[4] [id = 1]; // x, y, z, w
+//}
+
+
+//message opendlv.coordinate.Pose [id = 154] {
+//  opendlv.coordinate.Cartesian3 position [id = 1];
+//  opendlv.coordinate.Quaternion3 orientation [id = 2];
+//}
+/*
 
 // Proxy messages
 message opendlv.proxy.CartesianTimeOfFlight [id = 155] {
@@ -48,12 +52,11 @@ message opendlv.proxy.CartesianTimeOfFlight [id = 155] {
   opendlv.coordinate.Pose origin;
   list<opendlv.coordinate.Cartesian3> points;
 }
-
+*/
 message opendlv.proxy.SphericalTimeOfFlight [id = 156] {
-  uint32 numberOfPoints;
-  opendlv.coordinate.Pose origin;
   list<opendlv.coordinate.Spherical3> points;
 }
+/*
 
 message opendlv.proxy.Compass [id = 157] {
   //opendlv.
