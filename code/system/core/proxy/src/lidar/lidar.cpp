@@ -228,6 +228,10 @@ void Lidar::WriteToFile()
   write.close();
 }
 
+void Lidar::nextContainer(odcore::data::Container &c) {
+  (void)c;
+}
+
 void Lidar::tearDown()
 {
   m_sick->stop();
