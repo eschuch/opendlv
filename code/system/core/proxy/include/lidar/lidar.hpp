@@ -46,7 +46,7 @@ class Lidar : public odcore::base::module::DataTriggeredConferenceClientModule,
   Lidar &operator=(Lidar const &) = delete;
   virtual ~Lidar();
 
-  odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode body();
+  //odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode body();
   virtual void nextString(const std::string &s);
   virtual void SendData();
   virtual void ConvertToDistances();
