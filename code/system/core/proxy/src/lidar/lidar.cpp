@@ -128,7 +128,7 @@ void Lidar::nextString(const std::string &s)
 {
   unsigned char byte = (unsigned char)s[0]; //Storing byte as unsigned char
 
-  if(counter == 0) {
+  if(m_counter == 0) {
     std::cout << "New reading ";
   }
 
