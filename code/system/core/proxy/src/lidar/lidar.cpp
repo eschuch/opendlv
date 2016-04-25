@@ -44,7 +44,7 @@ namespace lidar {
   * @param a_argv Command line arguments.
   */
 Lidar::Lidar(int32_t const &a_argc, char **a_argv)
-    : TimeTriggeredConferenceClientModule(a_argc, a_argv, "proxy-lidar")
+    : DataTriggeredConferenceClientModule(a_argc, a_argv, "proxy-lidar")
     , m_firstHeader(true)
     , m_indicator(true)
     , m_startConfirmed(false)
@@ -59,6 +59,7 @@ Lidar::~Lidar()
 {
 }
 
+/*
 // This method will do the main data processing job.
 odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode Lidar::body()
 {
@@ -71,6 +72,7 @@ odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode Lidar::body()
 
   return odcore::data::dmcp::ModuleExitCodeMessage::OKAY;
 }
+*/
 
 void Lidar::setUp()
 {
