@@ -51,6 +51,7 @@ class Lidar : public odcore::base::module::DataTriggeredConferenceClientModule,
   virtual void SendData();
   virtual void ConvertToDistances();
   virtual void WriteToFile();
+  virtual void nextContainer(odcore::data::Container &c);
 
  private:
   void setUp();
