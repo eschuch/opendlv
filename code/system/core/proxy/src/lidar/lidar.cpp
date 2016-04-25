@@ -44,7 +44,7 @@ namespace lidar {
   * @param a_argv Command line arguments.
   */
 Lidar::Lidar(int32_t const &a_argc, char **a_argv)
-    : DataTriggeredConferenceClientModule(a_argc, a_argv, "proxy-lidar")
+    : TimeTriggeredConferenceClientModule(a_argc, a_argv, "proxy-lidar")
     , m_firstHeader(true)
     , m_indicator(true)
     , m_startConfirmed(false)
@@ -59,20 +59,21 @@ Lidar::~Lidar()
 {
 }
 
-/*
+
 // This method will do the main data processing job.
 odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode Lidar::body()
 {
   std::cout << "In body";
-
-  if(m_startConfirmed) {
-    SendData();
-  }
+  while (getModuleStateAndWaitForRemainingTimeInTimeslice() 
+      == odcore::data::dmcp::ModuleStateMessage::RUNNING) {
+    if(m_startConfirmed) {
+      SendData();
+    }
   // Send opendlv::proxy::SphericalTimeOfFlight ??
-
+  }
   return odcore::data::dmcp::ModuleExitCodeMessage::OKAY;
 }
-*/
+
 
 
 void Lidar::setUp()
@@ -227,10 +228,6 @@ void Lidar::WriteToFile()
 
 
   write.close();
-}
-
-void Lidar::nextContainer(odcore::data::Container &c) {
-  (void)c;
 }
 
 void Lidar::tearDown()

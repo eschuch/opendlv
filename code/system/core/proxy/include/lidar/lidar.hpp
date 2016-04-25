@@ -23,7 +23,7 @@
 #include <memory>
 #include <list>
 
-#include "opendavinci/odcore/base/module/DataTriggeredConferenceClientModule.h"
+#include "opendavinci/odcore/base/module/TimeTriggeredConferenceClientModule.h"
 #include "opendavinci/odcore/data/Container.h"
 #include "opendavinci/odcore/wrapper/SerialPort.h"
 
@@ -38,7 +38,7 @@ class Device;
 /**
  * This class provides...
  */
-class Lidar : public odcore::base::module::DataTriggeredConferenceClientModule,
+class Lidar : public odcore::base::module::TimeTriggeredConferenceClientModule,
               public odcore::io::StringListener {
  public:
   Lidar(int32_t const &, char **);
@@ -46,12 +46,11 @@ class Lidar : public odcore::base::module::DataTriggeredConferenceClientModule,
   Lidar &operator=(Lidar const &) = delete;
   virtual ~Lidar();
 
-  //odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode body();
+  odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode body();
   virtual void nextString(const std::string &s);
   virtual void SendData();
   virtual void ConvertToDistances();
   virtual void WriteToFile();
-  virtual void nextContainer(odcore::data::Container &c);
 
  private:
   void setUp();
