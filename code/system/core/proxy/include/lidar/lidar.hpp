@@ -23,7 +23,7 @@
 #include <memory>
 #include <list>
 
-#include "opendavinci/odcore/base/module/TimeTriggeredConferenceClientModule.h"
+#include "opendavinci/odcore/base/module/DataTriggeredConferenceClientModule.h"
 #include "opendavinci/odcore/data/Container.h"
 #include "opendavinci/odcore/wrapper/SerialPort.h"
 
