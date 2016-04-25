@@ -59,7 +59,7 @@ Lidar::~Lidar()
 {
 }
 
-/*
+
 // This method will do the main data processing job.
 odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode Lidar::body()
 {
@@ -72,7 +72,7 @@ odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode Lidar::body()
 
   return odcore::data::dmcp::ModuleExitCodeMessage::OKAY;
 }
-*/
+
 
 void Lidar::setUp()
 {
