@@ -38,7 +38,7 @@ class Device;
 /**
  * This class provides...
  */
-class Lidar : public odcore::base::module::TimeTriggeredConferenceClientModule,
+class Lidar : public odcore::base::module::DataTriggeredConferenceClientModule,
               public odcore::io::StringListener {
  public:
   Lidar(int32_t const &, char **);
