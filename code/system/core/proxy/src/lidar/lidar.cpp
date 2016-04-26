@@ -97,7 +97,7 @@ void Lidar::setUp()
   //}
 
   string SERIAL_PORT = kv.getValue<std::string>("proxy-lidar.port");
-  uint32_t BAUD_RATE = 9600; //TODO: Put in configuration file
+  uint32_t BAUD_RATE = kv.gatvalue<uint32_t>("proxy-lidar.baudrate");
 
   try {
     m_sick = shared_ptr<odcore::wrapper::SerialPort>(odcore::wrapper::SerialPortFactory::createSerialPort(SERIAL_PORT, BAUD_RATE));
@@ -134,7 +134,7 @@ void Lidar::nextString(const std::string &s)
   unsigned char byte = (unsigned char)s[0]; //Storing byte as unsigned char
 
   //if(m_counter == 0) {
-    std::cout << "New reading ";
+    std::cout << "New reading " << s << " ";
   //}
 
   //Updating buffer
