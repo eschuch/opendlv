@@ -50,6 +50,7 @@ Lidar::Lidar(int32_t const &a_argc, char **a_argv)
     , m_startConfirmed(false)
     , m_counter(0)
     , m_freshCoordinates()
+    , m_latestReading()
     , m_device()
     , m_sick()
 {
@@ -65,9 +66,7 @@ odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode Lidar::body()
 {
   std::cout << "In body";
 
-  unsigned char streamStart[] = {0x02, 0x00, 0x02, 0x00, 0x20, 0x24, 0x34, 0x08};
-  std::string startString( reinterpret_cast< char const* >(streamStart), 8) ;
-  m_sick->send(startString);
+  StartStream();
 
   while (getModuleStateAndWaitForRemainingTimeInTimeslice() 
       == odcore::data::dmcp::ModuleStateMessage::RUNNING) {
@@ -76,17 +75,24 @@ odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode Lidar::body()
       SendData();
       std::cout << "Kom igen då!" << std::endl;
     }
-  // Send opendlv::proxy::SphericalTimeOfFlight ??
+  StopStream();
   }
-
-  unsigned char streamStop[] = {0x02, 0x00, 0x02, 0x00, 0x20, 0x25, 0x35, 0x08};
-  std::string stopString( reinterpret_cast< char const* >(streamStop), 8) ;
-  m_sick->send(stopString);
-
   return odcore::data::dmcp::ModuleExitCodeMessage::OKAY;
 }
 
+void Lidar::StartStream()
+{
+  unsigned char streamStart[] = {0x02, 0x00, 0x02, 0x00, 0x20, 0x24, 0x34, 0x08};
+  std::string startString( reinterpret_cast< char const* >(streamStart), 8) ;
+  m_sick->send(startString);
+}
 
+void Lidar::StopStream()
+{
+  unsigned char streamStop[] = {0x02, 0x00, 0x02, 0x00, 0x20, 0x25, 0x35, 0x08};
+  std::string stopString( reinterpret_cast< char const* >(streamStop), 8) ;
+  m_sick->send(stopString);
+}
 
 void Lidar::setUp()
 {
@@ -171,10 +177,12 @@ void Lidar::nextString(const std::string &s)
     if(m_buffer[i] != m_measurementHeader[i]) { m_indicator = false; }
   }
   if(m_indicator) {
+    std::cout << "Här kan man va" << std::endl;
     if(!m_firstHeader) {
       ConvertToDistances();
     } 
-    m_counter = 0;  
+    m_counter = 0; 
+    m_firstHeader = false; 
   }
 
 }
@@ -213,16 +221,18 @@ void Lidar::ConvertToDistances()
 
   }
 
+  m_latestReading.setListOfPoints(m_freshCoordinates);
+
   WriteToFile();
 
 }
 
 void Lidar::SendData()
 {
-  opendlv::proxy::SphericalTimeOfFlight nextReading;
-  nextReading.setListOfPoints(m_freshCoordinates);
+  std::cout << "In SendData" << std::endl;
+  
 
-  odcore::data::Container c(nextReading);
+  odcore::data::Container c(m_latestReading);
   getConference().send(c);
 }
 
