@@ -97,7 +97,7 @@ void Lidar::setUp()
   //}
 
   string SERIAL_PORT = kv.getValue<std::string>("proxy-lidar.port");
-  uint32_t BAUD_RATE = kv.getvalue<uint32_t>("proxy-lidar.baudrate");
+  uint32_t BAUD_RATE = 9600;//kv.getvalue<uint32_t>("proxy-lidar.baudrate");
 
   try {
     m_sick = shared_ptr<odcore::wrapper::SerialPort>(odcore::wrapper::SerialPortFactory::createSerialPort(SERIAL_PORT, BAUD_RATE));
