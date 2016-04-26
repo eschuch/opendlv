@@ -80,7 +80,7 @@ odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode Lidar::body()
 
   unsigned char streamStop[] = {0x02, 0x00, 0x02, 0x00, 0x20, 0x25, 0x35, 0x08};
   std::string stopString( reinterpret_cast< char const* >(streamStop), 8) ;
-  serial->send(stopString);
+  m_sick->send(stopString);
 
   return odcore::data::dmcp::ModuleExitCodeMessage::OKAY;
 }
