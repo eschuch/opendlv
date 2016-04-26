@@ -66,6 +66,7 @@ odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode Lidar::body()
   std::cout << "In body";
   while (getModuleStateAndWaitForRemainingTimeInTimeslice() 
       == odcore::data::dmcp::ModuleStateMessage::RUNNING) {
+    std::cout << "Testvärde: " << m_distances[0] << " ";
     if(m_startConfirmed) {
       SendData();
     }
@@ -132,9 +133,9 @@ void Lidar::nextString(const std::string &s)
 {
   unsigned char byte = (unsigned char)s[0]; //Storing byte as unsigned char
 
-  if(m_counter == 0) {
+  //if(m_counter == 0) {
     std::cout << "New reading ";
-  }
+  //}
 
   //Updating buffer
   for(uint32_t i = 0; i < 9; i++) { 
