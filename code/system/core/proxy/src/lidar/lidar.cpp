@@ -64,16 +64,14 @@ Lidar::~Lidar()
 odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode Lidar::body()
 {
   std::cout << "In body";
-  
-  Lidar L = Lidar();
 
-  string SERIAL_PORT = kv.getValue<std::string>("proxy-lidar.port");
+  string SERIAL_PORT = "/dev/ttyS1");
 
   uint32_t BAUD_RATE = 9600;//kv.getvalue<uint32_t>("proxy-lidar.baudrate");
 
   try {
     m_sick = shared_ptr<odcore::wrapper::SerialPort>(odcore::wrapper::SerialPortFactory::createSerialPort(SERIAL_PORT, BAUD_RATE));
-    m_sick->setStringListener(&L);
+    m_sick->setStringListener(this);
     m_sick->start();
   }
   catch(string &exception) {
@@ -82,9 +80,9 @@ odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode Lidar::body()
 
   while (getModuleStateAndWaitForRemainingTimeInTimeslice() 
       == odcore::data::dmcp::ModuleStateMessage::RUNNING) {
-    //std::cout << "Testvärde: " << m_distances[0] << " ";
+    std::cout << "Testvärde: " << m_distances[0] << " ";
     if(m_startConfirmed) {
-      L.SendData();
+      SendData();
     }
   // Send opendlv::proxy::SphericalTimeOfFlight ??
   }
@@ -111,10 +109,10 @@ void Lidar::setUp()
    // std::cerr << "[proxy-lidar] No valid device driver defined."
    //           << std::endl;
   //}
-
+/*
   string SERIAL_PORT = kv.getValue<std::string>("proxy-lidar.port");
   uint32_t BAUD_RATE = 9600;//kv.getvalue<uint32_t>("proxy-lidar.baudrate");
-/*
+
   try {
     m_sick = shared_ptr<odcore::wrapper::SerialPort>(odcore::wrapper::SerialPortFactory::createSerialPort(SERIAL_PORT, BAUD_RATE));
     m_sick->setStringListener(this);
