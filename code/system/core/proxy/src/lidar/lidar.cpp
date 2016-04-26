@@ -74,6 +74,7 @@ odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode Lidar::body()
     std::cout << "Testvärde: " << m_distances[0] << " ";
     if(m_startConfirmed) {
       SendData();
+      std::cout << "Kom igen då!" << std::endl;
     }
   // Send opendlv::proxy::SphericalTimeOfFlight ??
   }
@@ -143,7 +144,7 @@ void Lidar::nextString(const std::string &s)
 {
   unsigned char byte = (unsigned char)s[0]; //Storing byte as unsigned char
 
-  //if(m_counter == 0) {
+  //if(m_counter == 0 && m_startConfirmed) {
     std::cout << "New reading " << s << " ";
   //}
 
