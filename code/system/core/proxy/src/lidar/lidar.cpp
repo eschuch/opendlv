@@ -64,11 +64,23 @@ Lidar::~Lidar()
 odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode Lidar::body()
 {
   std::cout << "In body";
+  
+  lidar L = lidar();
+
+  try {
+    m_sick = shared_ptr<odcore::wrapper::SerialPort>(odcore::wrapper::SerialPortFactory::createSerialPort(SERIAL_PORT, BAUD_RATE));
+    m_sick->setStringListener(&L);
+    m_sick->start();
+  }
+  catch(string &exception) {
+    cerr << "[" << getName() << "] Could not connect to Sickan: " << exception << endl;
+  }
+
   while (getModuleStateAndWaitForRemainingTimeInTimeslice() 
       == odcore::data::dmcp::ModuleStateMessage::RUNNING) {
-    std::cout << "Testvärde: " << m_distances[0] << " ";
+    //std::cout << "Testvärde: " << m_distances[0] << " ";
     if(m_startConfirmed) {
-      SendData();
+      L.SendData();
     }
   // Send opendlv::proxy::SphericalTimeOfFlight ??
   }
@@ -98,7 +110,7 @@ void Lidar::setUp()
 
   string SERIAL_PORT = kv.getValue<std::string>("proxy-lidar.port");
   uint32_t BAUD_RATE = 9600;//kv.getvalue<uint32_t>("proxy-lidar.baudrate");
-
+/*
   try {
     m_sick = shared_ptr<odcore::wrapper::SerialPort>(odcore::wrapper::SerialPortFactory::createSerialPort(SERIAL_PORT, BAUD_RATE));
     m_sick->setStringListener(this);
@@ -107,7 +119,7 @@ void Lidar::setUp()
   catch(string &exception) {
     cerr << "[" << getName() << "] Could not connect to Sickan: " << exception << endl;
   }
-
+*/
   m_startResponse[0] = 0x06;
   m_startResponse[1] = 0x02;
   m_startResponse[2] = 0x80;
