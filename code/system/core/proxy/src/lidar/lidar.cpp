@@ -65,7 +65,7 @@ odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode Lidar::body()
 {
   std::cout << "In body";
 
-  string SERIAL_PORT = "/dev/ttyS1");
+  string SERIAL_PORT = "/dev/ttyS1";
 
   uint32_t BAUD_RATE = 9600;//kv.getvalue<uint32_t>("proxy-lidar.baudrate");
 
