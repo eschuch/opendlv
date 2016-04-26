@@ -65,18 +65,9 @@ odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode Lidar::body()
 {
   std::cout << "In body";
 
-  string SERIAL_PORT = "/dev/ttyS1";
-
-  uint32_t BAUD_RATE = 9600;//kv.getvalue<uint32_t>("proxy-lidar.baudrate");
-
-  try {
-    m_sick = shared_ptr<odcore::wrapper::SerialPort>(odcore::wrapper::SerialPortFactory::createSerialPort(SERIAL_PORT, BAUD_RATE));
-    m_sick->setStringListener(this);
-    m_sick->start();
-  }
-  catch(string &exception) {
-    cerr << "[" << getName() << "] Could not connect to Sickan: " << exception << endl;
-  }
+  unsigned char streamStart[] = {0x02, 0x00, 0x02, 0x00, 0x20, 0x24, 0x34, 0x08};
+  std::string startString( reinterpret_cast< char const* >(streamStart), 8) ;
+  m_sick->send(startString);
 
   while (getModuleStateAndWaitForRemainingTimeInTimeslice() 
       == odcore::data::dmcp::ModuleStateMessage::RUNNING) {
@@ -86,6 +77,11 @@ odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode Lidar::body()
     }
   // Send opendlv::proxy::SphericalTimeOfFlight ??
   }
+
+  unsigned char streamStop[] = {0x02, 0x00, 0x02, 0x00, 0x20, 0x25, 0x35, 0x08};
+  std::string stopString( reinterpret_cast< char const* >(streamStop), 8) ;
+  serial->send(stopString);
+
   return odcore::data::dmcp::ModuleExitCodeMessage::OKAY;
 }
 
@@ -109,7 +105,7 @@ void Lidar::setUp()
    // std::cerr << "[proxy-lidar] No valid device driver defined."
    //           << std::endl;
   //}
-/*
+
   string SERIAL_PORT = kv.getValue<std::string>("proxy-lidar.port");
   uint32_t BAUD_RATE = 9600;//kv.getvalue<uint32_t>("proxy-lidar.baudrate");
 
@@ -121,7 +117,7 @@ void Lidar::setUp()
   catch(string &exception) {
     cerr << "[" << getName() << "] Could not connect to Sickan: " << exception << endl;
   }
-*/
+
   m_startResponse[0] = 0x06;
   m_startResponse[1] = 0x02;
   m_startResponse[2] = 0x80;
