@@ -66,7 +66,7 @@ odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode Lidar::body()
 {
   std::cout << "In body";
 
-  StartStream();
+  StartStream(); //Sends a message to sickan to start streaming data
 
   while (getModuleStateAndWaitForRemainingTimeInTimeslice() 
       == odcore::data::dmcp::ModuleStateMessage::RUNNING) {
@@ -75,7 +75,7 @@ odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode Lidar::body()
       SendData();
       std::cout << "Kom igen då!" << std::endl;
     }
-  StopStream();
+  StopStream(); //Sends a message to top streaming data
   }
   return odcore::data::dmcp::ModuleExitCodeMessage::OKAY;
 }
@@ -125,7 +125,7 @@ void Lidar::setUp()
     cerr << "[" << getName() << "] Could not connect to Sickan: " << exception << endl;
   }
 
-  m_startResponse[0] = 0x06;
+  m_startResponse[0] = 0x06;  //What we hope to get from sickan
   m_startResponse[1] = 0x02;
   m_startResponse[2] = 0x80;
   m_startResponse[3] = 0x03;
@@ -159,6 +159,10 @@ void Lidar::nextString(const std::string &s)
     m_buffer[i] = m_buffer[i+1]; 
   }
   m_buffer[9] = byte;
+
+  if(m_counter > 999) { //Safety clause
+    m_counter--;
+  }
 
   m_measurements[m_counter] = byte;
   m_counter++;
@@ -216,7 +220,7 @@ void Lidar::ConvertToDistances()
 
     m_distances[i] = p[0];
     if(i == 0) {
-      std::cout << distance << " ";
+      std::cout << "Dist:" << distance << " ";
     }
 
   }
