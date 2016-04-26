@@ -75,7 +75,6 @@ odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode Lidar::body()
       SendData();
       std::cout << "Kom igen då!" << std::endl;
     }
-  StopStream(); //Sends a message to top streaming data
   }
   return odcore::data::dmcp::ModuleExitCodeMessage::OKAY;
 }
@@ -258,6 +257,8 @@ void Lidar::WriteToFile()
 
 void Lidar::tearDown()
 {
+  
+  StopStream(); //Sends a message to top streaming data
   m_sick->stop();
   m_sick->setStringListener(NULL);
 }
