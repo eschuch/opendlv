@@ -65,10 +65,6 @@ odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode Lidar::body()
 {
   std::cout << "In body";
 
-  unsigned char streamStop[] = {0x02, 0x00, 0x02, 0x00, 0x20, 0x25, 0x35, 0x08};
-  std::string stopString( reinterpret_cast< char const* >(streamStop), 8) ;
-  m_sick->send(stopString);
-
   unsigned char streamStart[] = {0x02, 0x00, 0x02, 0x00, 0x20, 0x24, 0x34, 0x08};
   std::string startString( reinterpret_cast< char const* >(streamStart), 8) ;
   m_sick->send(startString);
@@ -83,8 +79,8 @@ odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode Lidar::body()
   // Send opendlv::proxy::SphericalTimeOfFlight ??
   }
 
-  //unsigned char streamStop[] = {0x02, 0x00, 0x02, 0x00, 0x20, 0x25, 0x35, 0x08};
-  //std::string stopString( reinterpret_cast< char const* >(streamStop), 8) ;
+  unsigned char streamStop[] = {0x02, 0x00, 0x02, 0x00, 0x20, 0x25, 0x35, 0x08};
+  std::string stopString( reinterpret_cast< char const* >(streamStop), 8) ;
   m_sick->send(stopString);
 
   return odcore::data::dmcp::ModuleExitCodeMessage::OKAY;
@@ -148,7 +144,7 @@ void Lidar::nextString(const std::string &s)
 {
   unsigned char byte = (unsigned char)s[0]; //Storing byte as unsigned char
 
-  if(m_counter == 0 && m_startConfirmed) {
+  if(m_counter == 0) {
     std::cout << "New reading " << s << " ";
   }
 
