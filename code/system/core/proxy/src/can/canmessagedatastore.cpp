@@ -33,7 +33,7 @@ namespace can {
 CanMessageDataStore::CanMessageDataStore(
 std::shared_ptr<automotive::odcantools::CANDevice> canDevice)
     : automotive::odcantools::MessageToCANDataStore(canDevice),
-    m_enabled(false)
+    m_enabled(true)
 {
 }
 
@@ -43,6 +43,16 @@ void CanMessageDataStore::add(odcore::data::Container const &a_container)
   odcore::data::Container &container = const_cast<odcore::data::Container &>(
       a_container);
  
+
+  if (container.getDataType() == opendlv::proxy::reverefh16::Pedals::ID()) {
+   opendlv::proxy::reverefh16::Pedals pedals
+      = container.getData<opendlv::proxy::reverefh16::Pedals>();
+
+    std::cout<< "Brake pedal: " << pedals.getBrakePedalPosition() << std::endl;
+  }
+
+
+
   if (container.getDataType() == opendlv::proxy::ControlState::ID()) {
     opendlv::proxy::ControlState controlState
       = container.getData<opendlv::proxy::ControlState>();
@@ -92,6 +102,7 @@ void CanMessageDataStore::add(odcore::data::Container const &a_container)
     // Must be -33.535 to disable deltatorque.
     steeringRequest.setSteeringDeltaTorque(33.535); 
     odcore::data::Container steeringRequestContainer(steeringRequest);
+    std::cout<<"Steering: " << steering << std::endl;
 
     canmapping::opendlv::proxy::reverefh16::SteeringRequest 
         steeringRequestMapping;
