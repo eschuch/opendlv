@@ -298,6 +298,7 @@ void Lidar::ConvertToDistances()
   }
 
   m_latestReading.setListOfPoints(m_freshCoordinates);
+  WriteToFile();
 }
 
 void Lidar::WriteToFile()
