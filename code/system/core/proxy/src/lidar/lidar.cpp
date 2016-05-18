@@ -21,6 +21,7 @@
 #include <cstring>
 #include <cmath>
 #include <iostream>
+#include <fstream>
 
 #include "opendavinci/odcore/base/KeyValueConfiguration.h"
 #include "opendavinci/odcore/data/Container.h"
@@ -310,7 +311,8 @@ void Lidar::WriteToFile()
 
   for(uint32_t i = 0; i < 361; i++)
   {
-    float* temp = m_freshCoordinates[i].getP
+    float* temp; 
+    temp = m_freshCoordinates[i].getP();
     write << temp[0] << ' ';
   }
   write << std::endl;
