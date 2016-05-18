@@ -143,7 +143,7 @@ void Lidar::setUp()
   m_measurementHeader[3] = 0x02;
   m_measurementHeader[4] = 0xB0;
   m_measurementHeader[5] = 0x69;
-  m_measurementHeader[6] = 0x41;
+  m_measurementHeader[6] = 0x01; //01 for centimeters, 41 for millimeters
   m_centimeterResponse[0] = 0x06;
   m_centimeterResponse[1] = 0x02;
   m_centimeterResponse[2] = 0x80;
@@ -284,7 +284,7 @@ void Lidar::ConvertToDistances()
   for(uint32_t i = 0; i < 361; i++) {
     byte1 = (int)m_measurements[i*2];
     byte2 = (int)m_measurements[i*2+1];
-    distance = byte1*32 + byte2/8; //Integer centimeters in local polar coordinates
+    distance = byte1 + (byte2%32)*256; //Integer centimeters in local polar coordinates
     cartesian[0] = distance * sin(PI * i /360) / 100; //Local cartesian coordinates in meters
     cartesian[1] = distance * (-cos(PI * i /360)) / 100;
     cartesian[0] += m_position[0]; //Truck cartesian coordinates
