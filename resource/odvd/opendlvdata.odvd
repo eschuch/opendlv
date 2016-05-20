@@ -56,7 +56,6 @@ message opendlv.proxy.AccelerometerReading [id = 159] {
 message opendlv.proxy.AltimeterReading [id = 160] {
   float altitude [id = 1];
 }
-/*
 
 message opendlv.proxy.CompassReading [id = 157] {
   float heading[3] [id = 1];

@@ -68,8 +68,9 @@ class Lidar : public odcore::base::module::TimeTriggeredConferenceClientModule,
   bool m_settingsMode;
   bool m_centimeterMode;
   uint32_t m_counter;
-  std::vector<opendlv::coordinate::Spherical3> m_freshCoordinates;
-  opendlv::proxy::SphericalTimeOfFlight m_latestReading;
+  std::vector<opendlv.model.Direction> m_directions;
+  std::vector<double> m_radii;
+  opendlv::proxy::EchoReading m_latestReading; 
   double m_position[3];
   unsigned char m_measurements[1000];
   unsigned char m_startResponse[10];

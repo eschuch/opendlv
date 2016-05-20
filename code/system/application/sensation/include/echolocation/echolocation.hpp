@@ -44,6 +44,10 @@ class Echolocation
  private:
   void setUp();
   void tearDown();
+
+  std::vector<float> m_angles;
+  std::vector<double> m_distances;
+  std::vector<odcore::data:TimeStamp> m_times;
 };
 
 } // echolocation

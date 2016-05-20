@@ -53,8 +53,56 @@ Echolocation::~Echolocation()
  * Receives .
  * Sends .
  */
-void Echolocation::nextContainer(odcore::data::Container &)
+void Echolocation::nextContainer(odcore::data::Container &a_c)
 {
+	if(a_c.getDataType() != odcore::proxy::EchoReading::ID()){
+  	return;
+  }
+  odcore::data::TimeStamp now;
+
+  opendlv::proxy::EchoReading reading = c.getData<opendlv::proxy::EchoReading>();
+  std::vector<opendlv::model::Direction> directions = reading.getDirections();
+  std::vector<double> distances = reading.getRadii();
+  uint32_t nPoints = reading.getNumberOfPoints();
+
+  std::vector<float> angles;
+
+  for(int i = 0; i < nPoints; i++) {
+  	angles.push_back(directions[i].getAzimuth())
+  }
+
+  m_angles.insret(m_angles.begin(), angles.begin(), angles.end());
+  m_distances.insert(m_distances.begin(), distances.begin(), distances.end());
+  
+  std::vector<opendlv::perception::Object> identifiedObjects;
+
+
+
+  /*
+  if(lidar){
+  	bool isObject = false;
+  	for(int i = 0; i < nPoints; i++){
+			if(distances[i] < )
+  	}
+
+  }
+
+
+
+  if(sonar){
+  }
+	*/
+
+}
+
+double Echolocation::PointDistance(float a_angle1, double a_dist1, float a_angle2, double a_dist2)
+{
+	double x1 = std::cos(a_angle1)*a_dist1;
+	double y1 = std::sin(a_angle1)*a_dist1;
+	double x2 = std::cos(a_angle2)*a_dist2;
+	double y2 = std::sin(a_angle2)*a_dist2;
+	double between = sqrt(pow(x1-x2,2) + pow(y1-y2,2));
+	return between;
 }
 
 void Echolocation::setUp()
