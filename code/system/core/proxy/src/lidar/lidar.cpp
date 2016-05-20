@@ -54,7 +54,7 @@ Lidar::Lidar(int32_t const &a_argc, char **a_argv)
     , m_centimeterMode(false)
     , m_counter(0)
     , m_directions()
-    , m_radii();
+    , m_radii()
     , m_latestReading()
     , m_device()
     , m_sick()
@@ -300,7 +300,9 @@ void Lidar::ConvertToDistances()
     m_radii.push_back(radius);
   }
 
-  //m_latestReading.setListOfPoints(m_freshCoordinates);
+  m_latestReading.setListOfDirections(m_directions);
+  m_latestReading.setListOfRadii(m_radii);
+  m_latestReading.setNumberOfPoints(m_radii.size());
   WriteToFile();
 }
 
