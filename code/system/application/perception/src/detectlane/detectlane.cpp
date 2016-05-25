@@ -159,6 +159,9 @@ void DetectLane::nextContainer(odcore::data::Container &c)
       m_initialized = true;
     }
 
+
+    cv::Mat origSource; src.copyTo(origSource);
+    
     if(!m_initialized){
       cvReleaseImage(&myIplImage);
       return;
@@ -166,13 +169,13 @@ void DetectLane::nextContainer(odcore::data::Container &c)
 
     if(m_cannyThresholdTrue == 1){
       Canny(src,src,m_threshold,3*m_threshold,3);
-      //medianBlur(src,src,3);
+      medianBlur(src,src,3);
     }
     else
     {
       cv::inRange(src, cv::Scalar(m_threshold, m_threshold, m_threshold), cv::Scalar(255, 255, 255), src);
+      medianBlur(src,src,3);
     }
-
     // Make output image into a 3 channel BGR image
     cvtColor( src, color_dst, CV_GRAY2BGR );
     
@@ -187,7 +190,8 @@ void DetectLane::nextContainer(odcore::data::Container &c)
 
     // Holder for the mean (rho,theta) for each group
     vector<Vec2f> groups;
-    if(lines.size() != 0){
+
+    if(!lines.empty()){
 
       // Draw all of the lines found in red
       for( size_t i = 0; i < lines.size(); i++ )
@@ -205,9 +209,6 @@ void DetectLane::nextContainer(odcore::data::Container &c)
         line( color_dst, pt1, pt2, Scalar(0,0,255), 3, 8 );
       }
 
-
-
-
       GetGrouping(groups,lines);   
 
       std::cout<<"Group size " << groups.size()<<std::endl;
@@ -222,114 +223,117 @@ void DetectLane::nextContainer(odcore::data::Container &c)
       float row1 = 100, row2 = 480;
       GetPointsOnLine(xPoints,yPoints,X,Y,p,m,row1,row2);
     
-      // Pair up lines to form a surface
-      std::vector<cv::Vec2i> groupIds;
-      GetLinePairs(xPoints,yPoints,groupIds);
-
-
-      int leftLane =  groupIds[0][0];
-      int rightLane = groupIds[0][1];
-
-      std::cout << "Leftlane\n" << X[leftLane][1] << " " << Y[leftLane][1]<<std::endl;
-      std::cout<< X[leftLane][0] << " " << Y[leftLane][0] << std::endl;
-      std::cout << "Rightlane\n" << X[rightLane][1] << " " << Y[rightLane][1]<<std::endl;
-      std::cout << X[rightLane][0] << " " << Y[rightLane][0]<<std::endl;
       cv::Mat tmp;
       color_dst.copyTo(tmp);
+      if(groups.size() > 1 )
+      {
+        // Pair up lines to form a surface
+        std::vector<cv::Vec2i> groupIds;
+        GetLinePairs(xPoints,yPoints,groupIds);
 
-      for(uint i = 0; i < groups.size(); i++){
 
-        float rho = groups[i][0];
-        float theta = groups[i][1];
+        int leftLane =  groupIds[0][0];
+        int rightLane = groupIds[0][1];
+
+        std::cout << "Leftlane\n" << X[leftLane][1] << " " << Y[leftLane][1]<<std::endl;
+        std::cout<< X[leftLane][0] << " " << Y[leftLane][0] << std::endl;
+        std::cout << "Rightlane\n" << X[rightLane][1] << " " << Y[rightLane][1]<<std::endl;
+        std::cout << X[rightLane][0] << " " << Y[rightLane][0]<<std::endl;
+        
+        for(uint i = 0; i < groups.size(); i++){
+
+          float rho = groups[i][0];
+          float theta = groups[i][1];
+        
+        
+          float a = cos(theta), b = sin(theta);
+          float x0 = a*rho, y0 = b*rho;
+          Point pt1(cvRound(x0 + 1000*(-b)),
+                    cvRound(y0 + 1000*(a)));
+          Point pt2(cvRound(x0 - 1000*(-b)),
+                    cvRound(y0 - 1000*(a)));
+          line( tmp, pt1, pt2, Scalar(0,255,0), 3, 8 );
+
+
+        }
+
+        for(uint i = 0; i < groupIds.size(); i++){
       
+          Point p1(xPoints[groupIds[i][0]][1],yPoints[groupIds[i][0]][1]);
+          Point p2(xPoints[groupIds[i][1]][1],yPoints[groupIds[i][1]][1]);
+          Point p3(xPoints[groupIds[i][1]][0],yPoints[groupIds[i][1]][0]);
+          Point p4(xPoints[groupIds[i][0]][0],yPoints[groupIds[i][0]][0]);
+                  
+          line( tmp, p1, p2, Scalar(255,0,255), 3, 8 );
+          line( tmp, p2, p3, Scalar(255,0,255), 3, 8 );
+          line( tmp, p3, p4, Scalar(255,0,255), 3, 8 );
+          line( tmp, p4, p1, Scalar(255,0,255), 3, 8 );
       
-        float a = cos(theta), b = sin(theta);
-        float x0 = a*rho, y0 = b*rho;
-        Point pt1(cvRound(x0 + 1000*(-b)),
-                  cvRound(y0 + 1000*(a)));
-        Point pt2(cvRound(x0 - 1000*(-b)),
-                  cvRound(y0 - 1000*(a)));
-        line( tmp, pt1, pt2, Scalar(0,255,0), 3, 8 );
+          //waitKey(0);
+
+          
+
+          odcore::data::TimeStamp imageTimeStamp = c.getSentTimeStamp();
+          std::string type = "surface";
+          float typeConfidence = 1;
+
+          std::vector<opendlv::model::Cartesian3> edges;
+
+          float xBotLeft = X[groupIds[i][0]][1];
+          float xBotRight = X[groupIds[i][1]][1];
+          float xTopRight = X[groupIds[i][1]][0];
+          float xTopLeft = X[groupIds[i][0]][0];
+
+          float yBotLeft = Y[groupIds[i][0]][1];
+          float yBotRight = Y[groupIds[i][1]][1];
+          float yTopRight = Y[groupIds[i][1]][0];
+          float yTopLeft = Y[groupIds[i][0]][0];
+
+          edges.push_back(opendlv::model::Cartesian3(xBotLeft,yBotLeft,1));
+          edges.push_back(opendlv::model::Cartesian3(xBotRight,yBotRight,1));
+          edges.push_back(opendlv::model::Cartesian3(xTopRight,yTopRight,1));
+          edges.push_back(opendlv::model::Cartesian3(xTopLeft,yTopLeft,1));
+
+          float edgesConfidence = 1;
+
+          bool traversable = true;
+          float confidence = 1;
+          std::vector<std::string> sources;
+          sources.push_back(mySharedImg.getName());
+
+          std::vector<std::string> properties;
+
+          int16_t surfaceId = i;
+
+          std::vector<int16_t> connectedWidth;
+          std::vector<int16_t> traversableTo;
+
+          opendlv::perception::Surface detectedSurface(imageTimeStamp,
+              type,
+              typeConfidence,
+              edges,
+              edgesConfidence,
+              traversable,
+              confidence,
+              sources,
+              properties,
+              surfaceId,
+              connectedWidth,
+              traversableTo);
 
 
-      }
-
-      for(uint i = 0; i < groupIds.size(); i++){
-    
-        Point p1(xPoints[groupIds[i][0]][1],yPoints[groupIds[i][0]][1]);
-        Point p2(xPoints[groupIds[i][1]][1],yPoints[groupIds[i][1]][1]);
-        Point p3(xPoints[groupIds[i][1]][0],yPoints[groupIds[i][1]][0]);
-        Point p4(xPoints[groupIds[i][0]][0],yPoints[groupIds[i][0]][0]);
-                
-        line( tmp, p1, p2, Scalar(255,0,255), 3, 8 );
-        line( tmp, p2, p3, Scalar(255,0,255), 3, 8 );
-        line( tmp, p3, p4, Scalar(255,0,255), 3, 8 );
-        line( tmp, p4, p1, Scalar(255,0,255), 3, 8 );
-    
-        //waitKey(0);
+          odcore::data::Container objectContainer(detectedSurface);
+          getConference().send(objectContainer);
 
         
-
-        odcore::data::TimeStamp imageTimeStamp = c.getSentTimeStamp();
-        std::string type = "surface";
-        float typeConfidence = 1;
-
-        std::vector<opendlv::model::Cartesian3> edges;
-
-        float xBotLeft = X[groupIds[i][0]][1];
-        float xBotRight = X[groupIds[i][1]][1];
-        float xTopRight = X[groupIds[i][1]][0];
-        float xTopLeft = X[groupIds[i][0]][0];
-
-        float yBotLeft = Y[groupIds[i][0]][1];
-        float yBotRight = Y[groupIds[i][1]][1];
-        float yTopRight = Y[groupIds[i][1]][0];
-        float yTopLeft = Y[groupIds[i][0]][0];
-
-        edges.push_back(opendlv::model::Cartesian3(xBotLeft,yBotLeft,1));
-        edges.push_back(opendlv::model::Cartesian3(xBotRight,yBotRight,1));
-        edges.push_back(opendlv::model::Cartesian3(xTopRight,yTopRight,1));
-        edges.push_back(opendlv::model::Cartesian3(xTopLeft,yTopLeft,1));
-
-        float edgesConfidence = 1;
-
-        bool traversable = true;
-        float confidence = 1;
-        std::vector<std::string> sources;
-        sources.push_back(mySharedImg.getName());
-
-        std::vector<std::string> properties;
-
-        int16_t surfaceId = i;
-
-        std::vector<int16_t> connectedWidth;
-        std::vector<int16_t> traversableTo;
-
-        opendlv::perception::Surface detectedSurface(imageTimeStamp,
-            type,
-            typeConfidence,
-            edges,
-            edgesConfidence,
-            traversable,
-            confidence,
-            sources,
-            properties,
-            surfaceId,
-            connectedWidth,
-            traversableTo);
-
-
-        odcore::data::Container objectContainer(detectedSurface);
-        getConference().send(objectContainer);
-
-      
+        }
       }
       namedWindow( "Tmp", 3 );
       imshow("Tmp",tmp);
     
     }
 
-
+    imshow("Orig", origSource);
     char key = cv::waitKey(1);
     if( key == 'w')
       m_threshold += 10;
