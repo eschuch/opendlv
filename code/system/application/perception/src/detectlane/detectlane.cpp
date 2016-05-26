@@ -66,6 +66,9 @@ DetectLane::DetectLane(int32_t const &a_argc, char **a_argv)
     m_threshold(180),
     m_houghThreshold(100),
     m_cannyThresholdTrue(1),
+    m_warpingTrue(-1),
+    m_cannyLow(100),
+    m_cannyHigh(200),
     m_standardLaneWidth(3.75),
     m_initialized(false),
     m_regions(),
@@ -89,6 +92,8 @@ DetectLane::DetectLane(int32_t const &a_argc, char **a_argv)
     m_transformationMatrix(),
     m_leftTransformationMatrix(),
     m_rightTransformationMatrix(),
+    m_leftTransformationMatrixWarped(),
+    m_rightTransformationMatrixWarped(),
     m_scale()
 
 {
@@ -147,28 +152,11 @@ void DetectLane::nextContainer(odcore::data::Container &c)
           imgWidth*imgHeight*nrChannels);
     }
     sharedMem->unlock();
-    
-    m_initialized = false;
-    if(mySharedImg.getName() == "front-left"){
-      m_transformationMatrix = m_leftTransformationMatrix;
-      m_leftIpm->ApplyHomography(src,src);
-      m_initialized = true;
-    } else if(mySharedImg.getName() == "front-right"){
-      m_transformationMatrix = m_rightTransformationMatrix;
-      m_rightIpm->ApplyHomography(src,src);
-      m_initialized = true;
-    }
-
 
     cv::Mat origSource; src.copyTo(origSource);
     
-    if(!m_initialized){
-      cvReleaseImage(&myIplImage);
-      return;
-    }
-
     if(m_cannyThresholdTrue == 1){
-      Canny(src,src,m_threshold,3*m_threshold,3);
+      Canny(src,src,m_cannyLow,m_cannyHigh,3);
       medianBlur(src,src,3);
     }
     else
@@ -176,6 +164,39 @@ void DetectLane::nextContainer(odcore::data::Container &c)
       cv::inRange(src, cv::Scalar(m_threshold, m_threshold, m_threshold), cv::Scalar(255, 255, 255), src);
       medianBlur(src,src,3);
     }
+ 
+    m_initialized = false;
+    if(mySharedImg.getName() == "front-left"){
+      if(m_warpingTrue == 1){
+        m_transformationMatrix = m_leftTransformationMatrixWarped;
+        m_leftIpm->ApplyHomography(src,src);
+        m_rightIpm->ApplyHomography(origSource,origSource);
+      } else {
+        cv::resize(src,src,cv::Size(640,480));
+        cv::resize(origSource,origSource,cv::Size(640,480));
+        m_transformationMatrix = m_leftTransformationMatrix;
+      }
+        m_initialized = true;
+
+    } else if(mySharedImg.getName() == "front-right"){
+      if(m_warpingTrue == 1){
+        m_transformationMatrix = m_rightTransformationMatrixWarped;
+        m_rightIpm->ApplyHomography(src,src);
+        m_rightIpm->ApplyHomography(origSource,origSource);
+      } else {
+        cv::resize(src,src,cv::Size(640,480));
+        cv::resize(origSource,origSource,cv::Size(640,480));
+        m_transformationMatrix = m_rightTransformationMatrix;
+      }
+      m_initialized = true;
+    }
+
+    
+    if(!m_initialized){
+      cvReleaseImage(&myIplImage);
+      return;
+    }
+    
     // Make output image into a 3 channel BGR image
     cvtColor( src, color_dst, CV_GRAY2BGR );
     
@@ -194,20 +215,20 @@ void DetectLane::nextContainer(odcore::data::Container &c)
     if(!lines.empty()){
 
       // Draw all of the lines found in red
-      for( size_t i = 0; i < lines.size(); i++ )
-      {
-        float rho = lines[i][0];
-        float theta = lines[i][1];
+      // for( size_t i = 0; i < lines.size(); i++ )
+      // {
+      //   float rho = lines[i][0];
+      //   float theta = lines[i][1];
       
       
-        float a = cos(theta), b = sin(theta);
-        float x0 = a*rho, y0 = b*rho;
-        Point pt1(cvRound(x0 + 1000*(-b)),
-                  cvRound(y0 + 1000*(a)));
-        Point pt2(cvRound(x0 - 1000*(-b)),
-                  cvRound(y0 - 1000*(a)));
-        line( color_dst, pt1, pt2, Scalar(0,0,255), 3, 8 );
-      }
+      //   float a = cos(theta), b = sin(theta);
+      //   float x0 = a*rho, y0 = b*rho;
+      //   Point pt1(cvRound(x0 + 1000*(-b)),
+      //             cvRound(y0 + 1000*(a)));
+      //   Pointx pt2(cvRound(x0 - 1000*(-b)),
+      //             cvRound(y0 - 1000*(a)));
+      //   line( color_dst, pt1, pt2, Scalar(0,0,255), 3, 8 );
+      // }
 
       GetGrouping(groups,lines);   
 
@@ -223,8 +244,6 @@ void DetectLane::nextContainer(odcore::data::Container &c)
       float row1 = 100, row2 = 480;
       GetPointsOnLine(xPoints,yPoints,X,Y,p,m,row1,row2);
     
-      cv::Mat tmp;
-      color_dst.copyTo(tmp);
       if(groups.size() > 1 )
       {
         // Pair up lines to form a surface
@@ -232,13 +251,13 @@ void DetectLane::nextContainer(odcore::data::Container &c)
         GetLinePairs(xPoints,yPoints,groupIds);
 
 
-        int leftLane =  groupIds[0][0];
-        int rightLane = groupIds[0][1];
+        // int leftLane =  groupIds[0][0];
+        // int rightLane = groupIds[0][1];
 
-        std::cout << "Leftlane\n" << X[leftLane][1] << " " << Y[leftLane][1]<<std::endl;
-        std::cout<< X[leftLane][0] << " " << Y[leftLane][0] << std::endl;
-        std::cout << "Rightlane\n" << X[rightLane][1] << " " << Y[rightLane][1]<<std::endl;
-        std::cout << X[rightLane][0] << " " << Y[rightLane][0]<<std::endl;
+        // std::cout << "Leftlane\n" << X[leftLane][1] << " " << Y[leftLane][1]<<std::endl;
+        // std::cout<< X[leftLane][0] << " " << Y[leftLane][0] << std::endl;
+        // std::cout << "Rightlane\n" << X[rightLane][1] << " " << Y[rightLane][1]<<std::endl;
+        // std::cout << X[rightLane][0] << " " << Y[rightLane][0]<<std::endl;
         
         for(uint i = 0; i < groups.size(); i++){
 
@@ -252,88 +271,89 @@ void DetectLane::nextContainer(odcore::data::Container &c)
                     cvRound(y0 + 1000*(a)));
           Point pt2(cvRound(x0 - 1000*(-b)),
                     cvRound(y0 - 1000*(a)));
-          line( tmp, pt1, pt2, Scalar(0,255,0), 3, 8 );
+          line( color_dst, pt1, pt2, Scalar(0,255,0), 3, 8 );
 
 
         }
+        if(!groupIds.empty()){
+          for(uint i = 0; i < groupIds.size(); i++){
+        
+            Point p1(xPoints[groupIds[i][0]][1],yPoints[groupIds[i][0]][1]);
+            Point p2(xPoints[groupIds[i][1]][1],yPoints[groupIds[i][1]][1]);
+            Point p3(xPoints[groupIds[i][1]][0],yPoints[groupIds[i][1]][0]);
+            Point p4(xPoints[groupIds[i][0]][0],yPoints[groupIds[i][0]][0]);
+                    
+            line( color_dst, p1, p2, Scalar(255,0,255), 3, 8 );
+            line( color_dst, p2, p3, Scalar(255,0,255), 3, 8 );
+            line( color_dst, p3, p4, Scalar(255,0,255), 3, 8 );
+            line( color_dst, p4, p1, Scalar(255,0,255), 3, 8 );
+        
+            //waitKey(0);
 
-        for(uint i = 0; i < groupIds.size(); i++){
-      
-          Point p1(xPoints[groupIds[i][0]][1],yPoints[groupIds[i][0]][1]);
-          Point p2(xPoints[groupIds[i][1]][1],yPoints[groupIds[i][1]][1]);
-          Point p3(xPoints[groupIds[i][1]][0],yPoints[groupIds[i][1]][0]);
-          Point p4(xPoints[groupIds[i][0]][0],yPoints[groupIds[i][0]][0]);
-                  
-          line( tmp, p1, p2, Scalar(255,0,255), 3, 8 );
-          line( tmp, p2, p3, Scalar(255,0,255), 3, 8 );
-          line( tmp, p3, p4, Scalar(255,0,255), 3, 8 );
-          line( tmp, p4, p1, Scalar(255,0,255), 3, 8 );
-      
-          //waitKey(0);
+            
+
+            odcore::data::TimeStamp imageTimeStamp = c.getSentTimeStamp();
+            std::string type = "surface";
+            float typeConfidence = 1;
+
+            std::vector<opendlv::model::Cartesian3> edges;
+
+            float xBotLeft = X[groupIds[i][0]][1];
+            float xBotRight = X[groupIds[i][1]][1];
+            float xTopRight = X[groupIds[i][1]][0];
+            float xTopLeft = X[groupIds[i][0]][0];
+
+            float yBotLeft = Y[groupIds[i][0]][1];
+            float yBotRight = Y[groupIds[i][1]][1];
+            float yTopRight = Y[groupIds[i][1]][0];
+            float yTopLeft = Y[groupIds[i][0]][0];
+
+            edges.push_back(opendlv::model::Cartesian3(xBotLeft,yBotLeft,1));
+            edges.push_back(opendlv::model::Cartesian3(xBotRight,yBotRight,1));
+            edges.push_back(opendlv::model::Cartesian3(xTopRight,yTopRight,1));
+            edges.push_back(opendlv::model::Cartesian3(xTopLeft,yTopLeft,1));
+
+            float edgesConfidence = 1;
+
+            bool traversable = true;
+            float confidence = 1;
+            std::vector<std::string> sources;
+            sources.push_back(mySharedImg.getName());
+
+            std::vector<std::string> properties;
+
+            int16_t surfaceId = i;
+
+            std::vector<int16_t> connectedWidth;
+            std::vector<int16_t> traversableTo;
+
+            opendlv::perception::Surface detectedSurface(imageTimeStamp,
+                type,
+                typeConfidence,
+                edges,
+                edgesConfidence,
+                traversable,
+                confidence,
+                sources,
+                properties,
+                surfaceId,
+                connectedWidth,
+                traversableTo);
+
+
+            odcore::data::Container objectContainer(detectedSurface);
+            getConference().send(objectContainer);
 
           
-
-          odcore::data::TimeStamp imageTimeStamp = c.getSentTimeStamp();
-          std::string type = "surface";
-          float typeConfidence = 1;
-
-          std::vector<opendlv::model::Cartesian3> edges;
-
-          float xBotLeft = X[groupIds[i][0]][1];
-          float xBotRight = X[groupIds[i][1]][1];
-          float xTopRight = X[groupIds[i][1]][0];
-          float xTopLeft = X[groupIds[i][0]][0];
-
-          float yBotLeft = Y[groupIds[i][0]][1];
-          float yBotRight = Y[groupIds[i][1]][1];
-          float yTopRight = Y[groupIds[i][1]][0];
-          float yTopLeft = Y[groupIds[i][0]][0];
-
-          edges.push_back(opendlv::model::Cartesian3(xBotLeft,yBotLeft,1));
-          edges.push_back(opendlv::model::Cartesian3(xBotRight,yBotRight,1));
-          edges.push_back(opendlv::model::Cartesian3(xTopRight,yTopRight,1));
-          edges.push_back(opendlv::model::Cartesian3(xTopLeft,yTopLeft,1));
-
-          float edgesConfidence = 1;
-
-          bool traversable = true;
-          float confidence = 1;
-          std::vector<std::string> sources;
-          sources.push_back(mySharedImg.getName());
-
-          std::vector<std::string> properties;
-
-          int16_t surfaceId = i;
-
-          std::vector<int16_t> connectedWidth;
-          std::vector<int16_t> traversableTo;
-
-          opendlv::perception::Surface detectedSurface(imageTimeStamp,
-              type,
-              typeConfidence,
-              edges,
-              edgesConfidence,
-              traversable,
-              confidence,
-              sources,
-              properties,
-              surfaceId,
-              connectedWidth,
-              traversableTo);
-
-
-          odcore::data::Container objectContainer(detectedSurface);
-          getConference().send(objectContainer);
-
-        
+          }
         }
       }
-      namedWindow( "Tmp", 3 );
-      imshow("Tmp",tmp);
     
     }
 
     imshow("Orig", origSource);
+    imshow("Color",color_dst);
+    
     char key = cv::waitKey(1);
     if( key == 'w')
       m_threshold += 10;
@@ -345,6 +365,20 @@ void DetectLane::nextContainer(odcore::data::Container &c)
       m_houghThreshold += 10;
     else if( key == 'k')
       m_houghThreshold = std::max(10,m_houghThreshold-10);
+    else if( key == '0')
+      m_warpingTrue *= -1;
+    else if( key == 'r')
+      m_cannyHigh += 10;
+    else if( key == 'f')
+      m_cannyHigh = std::max(m_cannyHigh-10,m_cannyLow);
+    else if( key == 't')
+      m_cannyLow = std::min(m_cannyLow+10,m_cannyHigh);
+    else if( key == 'g')
+      m_cannyLow = std::max(m_cannyLow-10,0);
+
+    
+
+    
 
     cvReleaseImage(&myIplImage);
 
@@ -365,12 +399,13 @@ void DetectLane::GetLinePairs(std::vector<cv::Vec2f> &xPoints,std::vector<cv::Ve
       else
         leftId = j, rightId = i;
       
-      // float xDiff1 = xPoints[rightId][0] - xPoints[leftId][0];
-      // float xDiff2 = xPoints[rightId][1] - xPoints[leftId][1];
-      // Lane width has to be  2 < w < 5 to be valid
-      //if( xDiff1 > 0 && xDiff1 < 10 && xDiff2 > 0 && xDiff2 < 10){
+      float xDiff1 = xPoints[rightId][0] - xPoints[leftId][0];
+      float xDiff2 = xPoints[rightId][1] - xPoints[leftId][1];
+      std::cout<<xDiff1+xDiff2<<std::endl;
+      //Lane width has to be  2 < w < 5 to be valid
+      if( (xDiff1 > 0) && (xDiff1 < 5) && (xDiff2 > 0) && (xDiff2 < 5) ){
           groupIds.push_back(cv::Vec2f(leftId,rightId));
-      //}
+      }
     }
   }
 }
@@ -625,10 +660,19 @@ void DetectLane::setUp()
 
   // NEW CODE
   m_leftTransformationMatrix = ReadMatrix(
-          "/opt/opendlv/share/opendlv/tools/vision/projection/leftCameraTransformationMatrixWarped.csv",3,3);
+          "/opt/opendlv/share/opendlv/tools/vision/projection/leftCameraTransformationMatrix.csv",3,3);
   std::cout<<m_leftTransformationMatrix;
   std::cout<<"\n------\n----\n---\n";
   m_rightTransformationMatrix = ReadMatrix(
+          "/opt/opendlv/share/opendlv/tools/vision/projection/rightCameraTransformationMatrix.csv",3,3);
+  // --------------------------------
+
+  // NEW CODE
+  m_leftTransformationMatrixWarped = ReadMatrix(
+          "/opt/opendlv/share/opendlv/tools/vision/projection/leftCameraTransformationMatrixWarped.csv",3,3);
+  std::cout<<m_leftTransformationMatrix;
+  std::cout<<"\n------\n----\n---\n";
+  m_rightTransformationMatrixWarped = ReadMatrix(
           "/opt/opendlv/share/opendlv/tools/vision/projection/rightCameraTransformationMatrixWarped.csv",3,3);
   // --------------------------------
 
@@ -813,7 +857,7 @@ void DetectLane::GetGrouping(std::vector<cv::Vec2f> &groups, std::vector<cv::Vec
   groupMean.push_back(group.at(0).at(0));
   groupSum.push_back(group.at(0).at(0));
   
-  double radius = 100;
+  double radius = 50;
   
   for(uint i = 1; i < lines.size(); i++)
   {

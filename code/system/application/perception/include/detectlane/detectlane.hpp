@@ -79,7 +79,9 @@ class DetectLane
   int m_threshold;
   int m_houghThreshold;
   int m_cannyThresholdTrue;
-  
+  int m_warpingTrue;
+  int m_cannyLow;
+  int m_cannyHigh;
   double m_standardLaneWidth;  
   bool m_initialized;
 
@@ -123,6 +125,8 @@ class DetectLane
   Eigen::Matrix3d m_leftTransformationMatrix;
   Eigen::Matrix3d m_rightTransformationMatrix;
 
+  Eigen::Matrix3d m_leftTransformationMatrixWarped;
+  Eigen::Matrix3d m_rightTransformationMatrixWarped;
 
   Eigen::Vector3d m_scale;
 

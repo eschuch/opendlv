@@ -207,7 +207,7 @@ message opendlv.perception.Surface [id = 184] {
   bool traversable [id = 6];
 
   float confidence [id = 7];
-  uint16 sources [id = 8];
+  list<string> sources [id = 8];
 
   list<string> properties [id = 9];
 
