@@ -37,6 +37,7 @@ file(GLOB_RECURSE thisproject-sources
   "${CMAKE_CURRENT_SOURCE_DIR}/src/gps/*.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/imu/*.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/lidar/*.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/userinterface/*.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/sonararray/*.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/v2v/*.cpp"
   )
@@ -65,6 +66,9 @@ target_link_libraries(${PROJECT_NAME}-imu ${PROJECT_NAME}lib-static ${LIBRARIES}
 add_executable(${PROJECT_NAME}-lidar "${CMAKE_CURRENT_SOURCE_DIR}/src/lidar/main.cpp")
 target_link_libraries(${PROJECT_NAME}-lidar ${PROJECT_NAME}lib-static ${LIBRARIES}) 
 
+add_executable(${PROJECT_NAME}-userinterface "${CMAKE_CURRENT_SOURCE_DIR}/src/userinterface/main.cpp")
+target_link_libraries(${PROJECT_NAME}-userinterface ${PROJECT_NAME}lib-static ${LIBRARIES}) 
+
 add_executable(${PROJECT_NAME}-sonararray "${CMAKE_CURRENT_SOURCE_DIR}/src/sonararray/main.cpp")
 target_link_libraries(${PROJECT_NAME}-sonararray ${PROJECT_NAME}lib-static ${LIBRARIES}) 
 
@@ -82,5 +86,6 @@ install(TARGETS ${PROJECT_NAME}-camera RUNTIME DESTINATION bin COMPONENT system-
 install(TARGETS ${PROJECT_NAME}-gps RUNTIME DESTINATION bin COMPONENT system-core)
 install(TARGETS ${PROJECT_NAME}-imu RUNTIME DESTINATION bin COMPONENT system-core)
 install(TARGETS ${PROJECT_NAME}-lidar RUNTIME DESTINATION bin COMPONENT system-core)
+install(TARGETS ${PROJECT_NAME}-userinterface RUNTIME DESTINATION bin COMPONENT system-core)
 install(TARGETS ${PROJECT_NAME}-sonararray RUNTIME DESTINATION bin COMPONENT system-core)
 install(TARGETS ${PROJECT_NAME}-v2v RUNTIME DESTINATION bin COMPONENT system-core)
