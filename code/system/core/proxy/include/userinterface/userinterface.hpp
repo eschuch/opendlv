@@ -30,6 +30,8 @@ namespace opendlv {
 namespace proxy {
 namespace userinterface {
 
+class OpenGl;
+
 /**
  * This class provides...
  */
@@ -49,6 +51,7 @@ class UserInterface
   void tearDown();
   
   std::thread m_openglThread;
+  std::unique_ptr<OpenGl> m_opengl;
 };
 
 } // userinterface

@@ -17,10 +17,17 @@
  * USA.
  */
 
-#ifndef USERINTERFACE_USERINTERFACE_HPP_
-#define USERINTERFACE_USERINTERFACE_HPP_
+#ifndef USERINTERFACE_OPENGL_HPP_
+#define USERINTERFACE_OPENGL_HPP_
 
 #include <vector>
+
+extern "C"
+void KeyboardCallback(unsigned char, int, int);
+extern "C"
+void MouseCallback(int, int, int, int);
+extern "C"
+void ShowCallback();
 
 namespace opendlv {
 namespace proxy {
@@ -32,6 +39,15 @@ class OpenGl {
   OpenGl(OpenGl const &) = delete;
   OpenGl &operator=(OpenGl const &) = delete;
   virtual ~OpenGl();
+  bool IsRunning() const;
+  void OnKeyboard(unsigned char, int, int);
+  void OnMouse(int, int, int, int);
+  void OnShow();
+  void Release();
+  void Start();
+
+ private:
+  bool m_isRunning;
 };
 
 } // userinterface

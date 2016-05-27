@@ -30,6 +30,7 @@
 #include "opendlvdata/GeneratedHeaders_opendlvdata.h"
 
 #include "userinterface/userinterface.hpp"
+#include "userinterface/opengl.hpp"
 
 namespace opendlv {
 namespace proxy {
@@ -44,8 +45,8 @@ namespace userinterface {
 UserInterface::UserInterface(int32_t const &a_argc, char **a_argv)
     : TimeTriggeredConferenceClientModule(
       a_argc, a_argv, "proxy-userinterface"),
-    //m_openglThread(&UserInterface::RunGui)
-    m_openglThread()
+    m_openglThread(&UserInterface::RunGui, this),
+    m_opengl(new OpenGl)
 {
 }
 
@@ -91,6 +92,7 @@ void UserInterface::nextContainer(odcore::data::Container &a_container)
 
 void UserInterface::RunGui()
 {
+  m_opengl->Start();
 }
 
 void UserInterface::setUp()
@@ -100,6 +102,7 @@ void UserInterface::setUp()
 
 void UserInterface::tearDown()
 {
+  m_opengl->Release();
 }
 
 } // userinterface
