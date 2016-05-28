@@ -63,9 +63,23 @@ Scene::~Scene()
 
  odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode Scene::body()
 {
+  opendlv::perception::Object testObject;
+  uint32_t testIndex = 0;
   while (getModuleStateAndWaitForRemainingTimeInTimeslice() ==
-      odcore::data::dmcp::ModuleStateMessage::RUNNING) {
-
+      odcore::data::dmcp::ModuleStateMessage::RUNNING) {                 //Test object
+    testObject.setDistance(static_cast<double>((testIndex+1)/10.0f));
+    opendlv::model::Direction direction;
+    direction.setAzimuth(static_cast<float>(testIndex)/100.0f);
+    testObject.setDirection(direction);
+    testObject.setObjectId(1);
+    if(m_savedObjects.size() < 1) {
+      m_savedObjects.push_back(testObject);
+    }
+    else {
+      m_savedObjects[0] = testObject;
+    }
+    testIndex++;
+    testIndex%=200;
     SendStuff();
 
   }
