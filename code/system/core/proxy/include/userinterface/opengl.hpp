@@ -22,6 +22,10 @@
 
 #include <vector>
 
+#include <opencv2/core/core.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/highgui/highgui.hpp>
+
 extern "C"
 void KeyboardCallback(unsigned char, int, int);
 extern "C"
@@ -40,6 +44,7 @@ class OpenGl {
   OpenGl &operator=(OpenGl const &) = delete;
   virtual ~OpenGl();
   bool IsRunning() const;
+  GLuint MatToTexture(cv::Mat &);
   void OnKeyboard(unsigned char, int, int);
   void OnMouse(int, int, int, int);
   void OnShow();
@@ -47,6 +52,7 @@ class OpenGl {
   void Start();
 
  private:
+  GLuint m_texture;
   bool m_isRunning;
 };
 
